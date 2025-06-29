@@ -3,30 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Arena Brasil: Batalha de Lendas - README</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
-            margin: 20px;
-            background-color: #f4f4f4;
-            color: #333;
-        }
-        h1, h2, h3 {
-            color: #d32f2f;
-        }
-        code {
-            background-color: #e8e8e8;
-            padding: 2px 4px;
-            border-radius: 4px;
-        }
-        pre {
-            background-color: #e8e8e8;
-            padding: 10px;
-            border-radius: 4px;
-            overflow-x: auto;
-        }
-    </style>
+   
 </head>
 <body>
 
