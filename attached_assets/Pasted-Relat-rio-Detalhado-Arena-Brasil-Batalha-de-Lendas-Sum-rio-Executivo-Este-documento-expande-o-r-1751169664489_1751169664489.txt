@@ -1,0 +1,543 @@
+Relatório Detalhado: Arena Brasil - Batalha de Lendas
+
+Sumário Executivo
+
+Este documento expande o relatório de design inicial do "Arena Brasil: Batalha de Lendas", fornecendo uma visão aprofundada da arquitetura técnica, da estrutura de backend e da interação entre os diferentes módulos do jogo. O objetivo é estabelecer um guia claro para o desenvolvimento, garantindo escalabilidade, performance, segurança e uma experiência de usuário de alto nível. A ênfase será em C# para o desenvolvimento do jogo (Unity) e na integração com serviços de backend modernos e eficientes, que rodarão em ambientes baseados em Linux/Unix.
+
+I. Arquitetura Geral do Sistema
+
+A arquitetura do "Arena Brasil" será dividida em três pilares principais:
+
+Cliente de Jogo (Game Client): Desenvolvido em Unity (C#), rodando nos dispositivos móveis dos jogadores (principalmente Android). Responsável pela renderização gráfica, input do jogador, lógica de gameplay local e comunicação com o backend e os servidores de jogo.
+
+Servidores de Jogo Dedicados (Dedicated Game Servers - DGS): Hospedados em serviços de nuvem (ex: AWS GameLift), escritos em C# (Unity Headless Build). Responsáveis por gerenciar a lógica de jogo em tempo real (física, colisões, spawns, zona segura, sincronização de jogadores, validação de ações), garantindo um ambiente de jogo justo e sem trapaças.
+
+Backend Central (Central Backend Services): Baseado em Serviços de Backend como Serviço (BaaS) como Firebase e/ou PlayFab, com potencial para Cloud Functions (Node.js/Python) ou Serviços .NET no Azure/AWS. Responsável pela lógica persistente do jogo: autenticação de usuários, perfis de jogadores, inventário, loja, leaderboards, matchmaking (se não for totalmente no GameLift), economia do jogo, análise de dados e segurança.
+
+II. Stack de Tecnologias Detalhada
+
+A. Cliente de Jogo (Game Client - Unity)
+
+Motor de Jogo: Unity Engine (versão LTS mais recente)
+
+Linguagem: C#
+
+Framework de Networking: Unity Netcode for GameObjects (NGO)
+
+Bibliotecas e Ferramentas:
+
+DOTS (Data-Oriented Technology Stack) / ECS (Entity Component System): Para otimizações de performance em lógicas de jogo complexas e simulações em larga escala, embora possa adicionar complexidade inicial. Avaliar a necessidade para elementos específicos (Ex: sistema de partículas, inteligência de multidões).
+
+Cinemachine: Para câmeras dinâmicas e cinematográficas.
+
+Post Processing Stack: Para efeitos visuais de alta qualidade.
+
+TextMeshPro: Para renderização de texto otimizada.
+
+Addressable Assets System: Para carregamento dinâmico de assets (skins, mapas, personagens) e otimização de downloads/updates.
+
+Profiling Tools (Unity Profiler, Android Profiler): Essenciais para identificar e otimizar gargalos de performance.
+
+Controle de Versão: Git (com Git LFS para assets grandes). Repositórios no GitHub/GitLab/Bitbucket.
+
+IDEs/Editores: Visual Studio Community (recomendado para C#/Unity) ou VS Code (com as extensões C# Dev Kit, Unity, Debugger for Unity).
+
+B. Servidores de Jogo Dedicados (DGS - Unity Headless)
+
+Motor de Jogo: Unity Engine (Build Headless)
+
+Linguagem: C#
+
+Framework de Networking: Unity Netcode for GameObjects (NGO) (o mesmo do cliente para consistência)
+
+Hospedagem: AWS GameLift. Gerencia o provisionamento, escalabilidade, matchmaking e alocação de sessões.
+
+Sistema Operacional: As instâncias do GameLift geralmente rodam em Linux (Amazon Linux 2), fornecendo um ambiente robusto e eficiente para os servidores Unity Headless.
+
+C. Backend Central (Central Backend Services)
+
+Autenticação e Banco de Dados de Perfil/Inventário:
+
+Firebase Authentication: Para login com e-mail/senha, Google, Facebook, etc.
+
+Firebase Firestore (NoSQL): Para armazenar dados de jogador (nível, XP, inventário, moedas, itens cosméticos, estatísticas de partida, progresso de passe de batalha). Ideal para dados semi-estruturados e acesso em tempo real.
+
+PlayFab: Uma alternativa para autenticação e gerenciamento completo de jogadores, inventário e economia virtual, tudo integrado em uma única plataforma.
+
+Lógica de Negócios / Funções Serverless:
+
+Firebase Cloud Functions (Node.js/Python): Para lógica de backend que precisa ser executada de forma segura e escalável, como:
+
+Validação de compras (IAPs)
+
+Concessão de recompensas após partidas (XP, moedas)
+
+Verificação anti-cheat (detecção de anomalias)
+
+Gerenciamento de leaderboards
+
+Processamento de eventos no jogo (ex: final de um evento sazonal)
+
+Alternativa/Complemento: Azure Functions (.NET Core) ou AWS Lambda (C#/.NET Core) se a equipe tiver forte preferência por C# no backend.
+
+Armazenamento de Assets/Conteúdo:
+
+Firebase Cloud Storage / AWS S3: Para armazenar assets do jogo que podem ser baixados pelo cliente (Ex: pacotes de skins, atualizações de mapas, patches). Ideal para integrar com o sistema Addressable Assets do Unity.
+
+Analytics e Monitoramento:
+
+Google Analytics for Firebase: Para coleta de métricas de usuário, engajamento, retenção e monetização.
+
+AWS CloudWatch / Google Cloud Monitoring: Para monitorar a saúde dos servidores de jogo e funções de backend.
+
+Sentry / Crashlytics: Para monitoramento de erros e crashes do cliente.
+
+Notificações Push:
+
+Firebase Cloud Messaging (FCM): Para enviar notificações aos jogadores (eventos, promoções, lembretes).
+
+III. Estrutura de Pastas e Files Lógicas Detalhada
+
+Esta estrutura será aplicada ao projeto Unity, com indicações de onde os arquivos de backend se encaixam.
+
+ArenaBrasil_Game/
+
+├── Assets/
+
+│ ├── 00_Core/
+
+│ │ ├── Managers/ (Singleton GameState, UIManager, AudioManager, NetworkManagerClient)
+
+│ │ │ └── GameFlowManager.cs (Coordena o fluxo de jogo: loading, lobby, game, results)
+
+│ │ ├── Systems/ (InputSystem, SaveLoadSystem, LocalizationSystem, AnalyticsSystem)
+
+│ │ │ └── AntiCheatSystem.cs (Client-side checks, reports to backend)
+
+│ │ ├── Interfaces/ (IDamageable, ICollectable, IUsable)
+
+│ │ ├── Utils/ (MathHelpers, StringHelpers, ExtensionMethods)
+
+│ │ └── Editor/ (Custom Inspectors, Editor Windows, Build Scripts)
+
+│ ├── 01_Art/
+
+│ │ ├── Animations/
+
+│ │ │ ├── Characters/
+
+│ │ │ ├── Weapons/
+
+│ │ │ └── Environment/
+
+│ │ ├── Materials/
+
+│ │ ├── Models/
+
+│ │ │ ├── Characters/ (Inclui "Heróis Lendas" models)
+
+│ │ │ ├── Environments/ (Tilesets, props, modular assets)
+
+│ │ │ └── Weapons/
+
+│ │ ├── Prefabs/ (Prefabs puros, sem scripts de gameplay, apenas visuais)
+
+│ │ ├── Shaders/
+
+│ │ ├── Textures/
+
+│ │ └── VFX/ (Partículas, explosões, efeitos de habilidade)
+
+│ ├── 02_Audio/
+
+│ │ ├── Music/
+
+│ │ ├── SFX/
+
+│ │ └── VoiceOvers/ (Dublagens dos Heróis, narrador, frases de combate)
+
+│ ├── 03_Gameplay/
+
+│ │ ├── Characters/
+
+│ │ │ ├── Player/ (PlayerController, PlayerHealth, InventoryManager, CharacterAbilityHandler)
+
+│ │ │ ├── NPC/ (AIController, NPCHealth, BehaviorTreeAssets, SpawnManager)
+
+│ │ │ └── CharacterData/ (ScriptableObjects: HeroData, NPCStats, AbilityData)
+
+│ │ ├── Weapons/ (WeaponController, Projectile, WeaponData, HitscanWeapon)
+
+│ │ ├── Items/ (ItemPickup, Consumable, ItemData, LootTable - ScriptableObjects)
+
+│ │ ├── Environment/ (Door, BreakableObject, LootContainer, InteractiveObject)
+
+│ │ └── Zones/ (SafeZoneController, LootZoneGenerator)
+
+│ ├── 04_UI/
+
+│ │ ├── Fonts/
+
+│ │ ├── Icons/
+
+│ │ ├── Sprites/
+
+│ │ ├── Themes/
+
+│ │ ├── Screens/ (MainMenuUI, InGameHUD, InventoryScreen, ShopScreen, SettingsMenu)
+
+│ │ ├── Components/ (CustomButtons, Sliders, HealthBars, SkillIcons)
+
+│ │ └── Animations/ (Animações de UI)
+
+│ ├── 05_Networking/
+
+│ │ ├── Client/ (NetworkManagerClient, PlayerNetworkSync, ObjectNetworkSync)
+
+│ │ ├── Server/ (NetworkManagerServer, ServerGameLogic, MatchmakingClient) -> Estes scripts são usados na build Headless do DGS
+
+│ │ ├── RPCs/ (Definition of ServerRpc, ClientRpc calls)
+
+│ │ └── DataTypes/ (NetworkVariables, Structs sincronizadas, NetworkMessages)
+
+│ ├── 06_AI/
+
+│ │ ├── BehaviorTrees/ (Nodes for BT: Task_Patrol, Condition_IsTargetVisible)
+
+│ │ ├── Navigation/ (NavMeshBakers, CustomNavMeshAgents)
+
+│ │ ├── ScriptableObjects/ (AI Profiles, Difficulty Settings)
+
+│ │ └── EventAI/ (Scripts para eventos de IA dinâmica: CreatureSpawn, WeatherChange)
+
+│ ├── 07_ThirdParty/
+
+│ │ ├── FirebaseSDK/ (Firebase core, auth, firestore, storage)
+
+│ │ ├── UnityNetcode/ (Core Netcode package)
+
+│ │ ├── AdSDKs/ (Google AdMob, Unity Ads, AppLovin)
+
+│ │ ├── OtherPlugins/ (DOTS packages, any other asset store purchases)
+
+│ │ └── EditorExtensions/
+
+│ ├── 08_Scenes/
+
+│ │ ├── MainMenuScene.unity
+
+│ │ ├── LoadingScene.unity
+
+│ │ ├── LobbyScene.unity
+
+│ │ ├── Gameplay/
+
+│ │ │ ├── Map_Favela.unity
+
+│ │ │ ├── Map_Amazonia.unity
+
+│ │ │ └── Map_Metropole.unity
+
+│ │ └── TestScenes/ (Funcionalidade.unity, StressTest.unity)
+
+│ ├── 09_Resources/ (Usar com parcimônia, para assets carregados via Resources.Load)
+
+│ ├── 10_Settings/
+
+│ │ ├── GameSettingsSO.asset (Global game settings as ScriptableObject)
+
+│ │ ├── AudioSettingsSO.asset
+
+│ │ ├── GraphicsSettingsSO.asset
+
+│ │ ├── CharacterBalanceSO.asset
+
+│ │ └── EconomySettingsSO.asset (Preços, recompensas)
+
+│ └── StreamingAssets/ (Para assets baixados em runtime, como Addressables)
+
+│
+
+├── ProjectSettings/ (Arquivos de configuração do Unity: Input, Physics, Quality)
+
+├── Library/ (Arquivos gerados pelo Unity, não versionar)
+
+├── Packages/ (Arquivos de packages do Unity, gerenciar via Package Manager)
+
+├── Logs/ (Logs de build e runtime)
+
+├── BuildOutput/ (Output das builds do jogo)
+
+│ ├── Android/
+
+│ └── Server/ (Build Headless para DGS)
+
+│
+
+├── Backend/ (Pasta raiz para o código do Backend)
+
+│ ├── functions/ (Para Firebase Cloud Functions ou Azure/AWS Functions)
+
+│ │ ├── package.json (Dependências Node.js)
+
+│ │ ├── index.js (Funções Cloud Functions)
+
+│ │ └── lib/ (Código compilado, se for TypeScript)
+
+│ ├── api/ (Se tiver uma API REST customizada, ex: .NET Core API)
+
+│ │ ├── controllers/
+
+│ │ ├── services/
+
+│ │ ├── models/
+
+│ │ └── Startup.cs
+
+│ ├── tests/ (Testes unitários e de integração do backend)
+
+│ └── deploy_scripts/ (Scripts para deployment automatizado do backend)
+
+│
+
+├── Documentation/ (Pasta para documentos adicionais)
+
+│ ├── GDD/ (Game Design Document completo)
+
+│ ├── TechnicalDesignDoc.md (Este documento)
+
+│ ├── API_Docs.md (Documentação da API do Backend)
+
+│ ├── MonetizationPlan.md
+
+│ └── MarketingPlan.md
+
+│
+
+└── README.md
+
+IV. Interação entre as Partes (Game Client, DGS, Backend)
+
+A interação entre os componentes é o coração de um jogo online robusto.
+
+A. Cliente de Jogo leftrightarrow Servidor de Jogo Dedicado (DGS)
+
+Comunicação em Tempo Real: Via Unity Netcode for GameObjects (NGO), usando o protocolo UDP/TCP (subjacente) para baixa latência.
+
+Funções Globais de Interação (NGO):
+
+NetworkManager.Singleton.StartHost() / StartClient(): Iniciar conexões de host/cliente.
+
+NetworkManager.Singleton.Shutdown(): Desconectar.
+
+NetworkObject: Componente para objetos que precisam ser sincronizados pela rede.
+
+NetworkBehaviour: Classe base para scripts de rede (players, armas, itens).
+
+[ServerRpc] (Remote Procedure Call): Funções chamadas pelo cliente, executadas no servidor.
+
+Exemplo: PlayerController.MoveServerRpc(Vector3 newPosition) - cliente envia sua intenção de movimento, servidor valida e sincroniza. WeaponController.ShootServerRpc(Vector3 target) - cliente envia comando de tiro, servidor verifica hitbox e aplica dano.
+
+[ClientRpc]: Funções chamadas pelo servidor, executadas em um ou todos os clientes.
+
+Exemplo: ServerGameLogic.AnnounceKillClientRpc(string killerName, string victimName) - servidor informa a todos sobre uma eliminação. HealthSystem.UpdateHealthClientRpc(int newHealth) - servidor envia atualização de vida para o cliente específico.
+
+NetworkVariable<T>: Variáveis sincronizadas automaticamente entre o servidor e os clientes (Ex: NetworkVariable<int> currentHealth).
+
+Fluxo de Partida Online:
+
+Matchmaking: Cliente interage com o Backend Central (ou Matchmaking do GameLift) para encontrar uma partida.
+
+Alocação de DGS: O serviço de matchmaking (GameLift) encontra um DGS disponível ou provisiona um novo.
+
+Conexão: Cliente recebe o IP/porta do DGS e se conecta.
+
+Sincronização: DGS gerencia a simulação da partida e sincroniza o estado (posições, HP, eventos) com todos os clientes.
+
+Validação: DGS valida todas as ações dos clientes para prevenir trapaças.
+
+Final de Partida: DGS determina o vencedor e envia os resultados para o Backend Central.
+
+B. Cliente de Jogo leftrightarrow Backend Central (Firebase/PlayFab)
+
+Comunicação Assíncrona: Geralmente via HTTPS/APIs REST ou SDKs específicos dos serviços.
+
+Funções Globais de Interação (Exemplo com Firebase SDKs):
+
+Autenticação:
+
+C#
+
+// Firebase Authentication
+
+FirebaseAuth.DefaultInstance.SignInWithEmailAndPasswordAsync(email, password).ContinueWithOnMainThread(task => { /* ... */ });
+
+Perfis de Jogador (Firestore):
+
+C#
+
+// Escrever dados do jogador
+
+FirebaseFirestore.DefaultInstance.Collection("players").Document(userId).SetAsync(playerData);// Ler dados do jogador
+
+FirebaseFirestore.DefaultInstance.Collection("players").Document(userId).GetSnapshotAsync().ContinueWithOnMainThread(task => { /* ... */ });
+
+Loja e Inventário (Firestore/Cloud Functions):
+
+C#
+
+// Solicitar compra (cliente -> Cloud Function)
+
+FirebaseFunctions.DefaultInstance.GetHttpsCallable("purchaseItem").CallAsync(new { itemId = "skin_saci" }).ContinueWithOnMainThread(task => { /* ... */ });// (Cloud Function validaria a compra, debitaria moedas, adicionaria item ao inventário no Firestore)
+
+Leaderboards (Firestore/Cloud Functions):
+
+C#
+
+// Obter top 100 do leaderboard
+
+FirebaseFirestore.DefaultInstance.Collection("leaderboards").OrderByDescending("score").Limit(100).GetSnapshotAsync().ContinueWithOnMainThread(task => { /* ... */ });// (Cloud Function atualizaria score após cada partida)
+
+Anúncios Recompensados (AdMob/Unity Ads SDKs):
+
+C#
+
+// Exibir anúncio recompensado
+
+Advertisement.Show("Rewarded_Android", new ShowOptions { resultCallback = HandleShowResult });// (Recompensa liberada após validação via Cloud Function para evitar fraude)
+
+Casos de Uso:
+
+Login/Registro de contas.
+
+Carregamento e salvamento do progresso do jogador (XP, nível, moedas).
+
+Gerenciamento do inventário e aquisição de novos itens na loja.
+
+Participação em eventos e missões que exigem validação de backend.
+
+Submissão e consulta de leaderboards.
+
+Gerenciamento de passes de batalha.
+
+C. Servidor de Jogo Dedicado (DGS) leftrightarrow Backend Central
+
+Comunicação: Geralmente via SDKs (se disponíveis para o ambiente do GameLift/C#) ou chamadas de API HTTPS.
+
+Funções Globais de Interação:
+
+Registro de Resultados de Partida:
+
+C#
+
+// DGS envia resultados da partida para uma Cloud Function// Cloud Function recebe: PlayerIDs, Kills, Deaths, Damage, WinnerID// Cloud Function: Atualiza Firestore (estatísticas de jogador), Leaderboards, concede recompensas
+
+Checagem Anti-Cheat: DGS reporta atividades suspeitas ao Backend para análise e banimento.
+
+Recuperação de Dados: DGS pode precisar buscar alguns dados de configuração do jogo (ex: tabelas de loot, balanceamento de armas) do Backend antes de iniciar a partida, embora muitos desses dados possam estar empacotados na própria build do DGS para performance.
+
+Casos de Uso:
+
+Após o término de uma partida, o DGS envia os resultados detalhados (quem venceu, estatísticas de cada jogador) para o Backend Central.
+
+O Backend processa esses resultados, atualiza os perfis dos jogadores no Firestore (XP, moedas, vitórias, eliminações), atualiza os leaderboards e concede as recompensas apropriadas.
+
+Durante a partida, o DGS pode consultar o Backend para verificar se um jogador está banido ou se uma transação de item é válida.
+
+V. Estratégias de Segurança
+
+A segurança é vital para um jogo rentável e com impacto no mercado, especialmente em um Battle Royale.
+
+Validação no Servidor (Server-Authoritative): Todas as ações críticas de gameplay (movimento, tiro, dano, coleta de itens) devem ser validadas e processadas no DGS, não apenas no cliente. Isso previne hacks como speed hacks, aimbots e invencibilidade.
+
+Autenticação Robusta: Usar Firebase Authentication ou PlayFab Auth para gerenciar as credenciais dos usuários de forma segura.
+
+Segurança da Comunicação: Toda a comunicação entre cliente-servidor e cliente-backend deve usar protocolos seguros (TLS/SSL para HTTPS, criptografia para dados de rede).
+
+Proteção Anti-Cheat:
+
+Client-Side: Detecção de modificações no jogo, uso de softwares proibidos (ex: Unity Anti-Cheat Toolkit ou soluções de terceiros). Essas detecções enviam alertas para o Backend.
+
+Server-Side: Análise de dados de jogo no DGS (anomalias de movimento, dano impossível, taxa de tiro irreal) e no Backend (padrões de jogo incomuns, ganho de moeda inexplicável).
+
+Funções Serverless: Usar Cloud Functions para validar todas as operações de compra e concessão de itens/moedas, evitando injeção de itens.
+
+Proteção DDoS: Serviços como AWS GameLift e a infraestrutura do Firebase/Google Cloud já oferecem proteção nativa contra ataques DDoS.
+
+Políticas de Acesso (IAM): Restringir o acesso a recursos de backend e nuvem usando o princípio do menor privilégio.
+
+VI. Estratégias de Voz, Fases e Impacto (Aprofundamento)
+
+A. Estratégia de Voz e Narrativa (Aprofundamento)
+
+Lore Expandida:
+
+O "Rasgo Dimensional": Um evento cataclísmico que abriu fendas entre a realidade e o "Plano das Lendas", trazendo os Heróis Lendas ao nosso mundo e criando as Arenas de Convergência.
+
+As Facções: Introduzir facções sutis no lore (Ex: Lendas que querem restaurar o equilíbrio, Lendas que buscam dominar a Arena). Isso pode inspirar futuros modos de jogo ou eventos.
+
+Dublagem e Sotaques: Além dos Heróis, considerar vozes únicas para NPCs importantes ou para itens lendários que "falam" ao serem coletados.
+
+Música Dinâmica: Trilha sonora que se adapta à intensidade da batalha (calma na exploração, cresce no confronto, épica no final). Instrumentos brasileiros e temas folclóricos na composição.
+
+Eventos de Lore Sazonais: Eventos in-game que aprofundam a história do universo, com desafios especiais e recompensas que revelam mais sobre as lendas.
+
+B. Fases do Jogo (Foco na Experiência do Jogador)
+
+As "fases" no Battle Royale são mais sobre a progressão da experiência do jogador na partida e ao longo da vida do jogo.
+
+Fases da Partida:
+
+Lançamento (Ação Intensa Curta): Descida e pouso estratégico, busca frenética por armas básicas.
+
+Looting e Rotação (Estratégia e Exploração): Coleta de itens, movimentação para o centro da zona segura, reconhecimento do mapa.
+
+Confronto Inicial (Engajamento Tático): Primeiros encontros com inimigos, combates de média distância.
+
+Zonas Seguras Finais (Pressão Crescente): A zona encolhe, forçando combates mais próximos e decisões rápidas.
+
+Final de Jogo (Clímax): Combates intensos entre os últimos sobreviventes, alta adrenalina.
+
+Fases da Jornada do Jogador (Retenção):
+
+Onboarding: Tutoriais interativos e recompensas iniciais para ensinar as mecânicas.
+
+Progressão Inicial: Níveis rápidos, desbloqueio de primeiros Heróis e itens básicos.
+
+Engajamento de Médio Prazo: Participação em passes de batalha, desafios diários/semanais, eventos.
+
+Engajamento de Longo Prazo: Competição em leaderboards, busca por itens raros, participação em clãs, novos conteúdos e modos.
+
+C. Impacto e Sucesso no Mercado (Aprofundamento)
+
+Engajamento Cultural: A utilização autêntica e respeitosa de elementos da cultura brasileira será um diferencial massivo. Isso inclui não apenas skins, mas a narrativa, a música, os eventos e até mesmo as falas dos personagens.
+
+Marketing Localizado e Viral:
+
+Memes e Humor: Criação de conteúdo marketing que ressoe com o humor e os memes brasileiros.
+
+Eventos Físicos: Participação em feiras de jogos brasileiras (BIG Festival, Brasil Game Show) para demonstrações e contato direto com a comunidade.
+
+Campanhas de UGC (User Generated Content): Incentivar os jogadores a criarem e compartilharem seus próprios vídeos, artes e memes do jogo.
+
+Monetização Justa e Transparente: Comunicação clara sobre as chances de itens em caixas de loot e foco em itens cosméticos, não pay-to-win. Isso constrói confiança e reputação.
+
+Ciclo de Feedback Ativo: Manter canais abertos com a comunidade (Discord, redes sociais, fóruns) para ouvir sugestões, reportar bugs e mostrar que a opinião do jogador importa. Atualizações rápidas baseadas no feedback são cruciais.
+
+E-Sports (Visão Futura): Se o jogo atingir uma base de jogadores competitiva, investir em torneios e infraestrutura de e-sports local, com premiações e transmissões, pode solidificar seu lugar no mercado.
+
+VII. Próximos Passos e Entregáveis Iniciais
+
+Documento de Design de Jogo (GDD) Completo: Aprofundar todos os aspectos de gameplay, Heróis Lendas, mapas, armas e mecânicas.
+
+Prova de Conceito / Protótipo de Gameplay: Desenvolver um protótipo jogável das mecânicas centrais (movimentação, tiro, loot básico) em um pequeno ambiente de teste.
+
+Prototipagem de Rede: Construir um protótipo multiplayer básico com 2-4 jogadores para validar a sincronização e latência.
+
+Teste de Performance e Otimização Inicial: Começar a otimizar para Android desde as fases iniciais.
+
+Especificação de Backend (API Docs): Detalhar todas as APIs que o cliente e o DGS precisarão consumir do Backend Central.
+
+Planejamento de Testes (QA Plan): Definir estratégias para testes funcionais, de performance, de rede e de segurança.
+
+Este relatório fornece uma base sólida para o desenvolvimento do "Arena Brasil: Batalha de Lendas", cobrindo as camadas de design, tecnologia e estratégia de mercado. A execução disciplinada e a atenção contínua à performance, experiência do usuário e engajamento da comunidade serão os verdadeiros catalisadores para o seu sucesso e rentabilidade no dinâmico mercado brasileiro
