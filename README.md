@@ -1,112 +1,137 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arena Brasil: Batalha de Lendas - README</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        h1, h2, h3 {
+            color: #d32f2f;
+        }
+        code {
+            background-color: #e8e8e8;
+            padding: 2px 4px;
+            border-radius: 4px;
+        }
+        pre {
+            background-color: #e8e8e8;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
 
-# Arena Brasil: Batalha de Lendas ✨🇧🇷
+<h1>Arena Brasil: Batalha de Lendas ✨🇧🇷</h1>
+<p>O Battle Royale mobile que celebra a cultura brasileira, combinando gameplay imersivo com lendas do nosso folclore!</p>
 
-O Battle Royale mobile que celebra a cultura brasileira, combinando gameplay imersivo com lendas do nosso folclore!
+<h2>📋 Visão Geral</h2>
+<p>"Arena Brasil: Batalha de Lendas" é concebido como um jogo Battle Royale móvel de alto potencial, inspirado no sucesso de "Free Fire" em mercados emergentes, com foco particular no Brasil. O objetivo é desenvolver um título não apenas envolvente, mas também altamente lucrativo, capitalizando a vasta base de jogadores móveis brasileiros.</p>
 
-## 📋 Visão Geral
+<h2>🏗️ Arquitetura do Sistema</h2>
+<h3>Componentes Principais</h3>
+<ol>
+    <li><strong>Cliente de Jogo (Unity C#)</strong>
+        <ul>
+            <li>Motor: Unity Engine 6.0 LTS</li>
+            <li>Networking: Unity Netcode for Entities (NFE)</li>
+            <li>Otimização: DOTS/ECS para alta performance</li>
+        </ul>
+    </li>
+    <li><strong>Servidores de Jogo Dedicados (DGS)</strong>
+        <ul>
+            <li>Unity Headless Build em C#</li>
+            <li>Hospedagem: AWS GameLift</li>
+            <li>Simulação autoritária de gameplay</li>
+        </ul>
+    </li>
+    <li><strong>Backend Central</strong>
+        <ul>
+            <li>Firebase Authentication & Firestore</li>
+            <li>PlayFab para economia virtual</li>
+            <li>Cloud Functions para lógica de negócio</li>
+        </ul>
+    </li>
+</ol>
 
-"Arena Brasil: Batalha de Lendas" é concebido como um jogo Battle Royale móvel de alto potencial, inspirado no sucesso de "Free Fire" em mercados emergentes, com foco particular no Brasil. O objetivo é desenvolver um título não apenas envolvente, mas também altamente lucrativo, capitalizando a vasta base de jogadores móveis brasileiros.
-
-## 🏗️ Arquitetura do Sistema
-
-### Componentes Principais
-
-1. **Cliente de Jogo (Unity C#)**
-   - Motor: Unity Engine 6.0 LTS
-   - Networking: Unity Netcode for Entities (NFE)
-   - Otimização: DOTS/ECS para alta performance
-
-2. **Servidores de Jogo Dedicados (DGS)**
-   - Unity Headless Build em C#
-   - Hospedagem: AWS GameLift
-   - Simulação autoritária de gameplay
-
-3. **Backend Central**
-   - Firebase Authentication & Firestore
-   - PlayFab para economia virtual
-   - Cloud Functions para lógica de negócio
-
-## 🚀 Tecnologias Utilizadas
-
-- **Motor de Jogo**: Unity Engine 6.0 LTS
-- **Linguagem**: C#
-- **Networking**: Unity Netcode for Entities (NFE)
-- **Backend**: Firebase + PlayFab
-- **Autenticação**: Firebase Authentication
-- **Banco de Dados**: Firebase Firestore
-- **Hospedagem de Servidores**: AWS GameLift
-- **Analytics**: Google Analytics for Firebase
-
-## 🎮 Heróis Lendas
-
-- **Saci**: Teletransporte + Invisibilidade temporária
-- **Curupira**: Velocidade aumentada + Rastros confusos
-- **Iara (Mãe d'Água)**: Cura + Atração de inimigos
-- **Boitatá**: Área de dano de fogo
-- **Mula-sem-Cabeça**: Dash com dano
-
-## 📁 Estrutura do Projeto
-
-```
+<h2>📁 Estrutura do Projeto</h2>
+<pre>
 Assets/
-├── 00_Core/           # Sistemas fundamentais
-├── 01_Art/            # Assets visuais
-├── 02_Audio/          # Música e efeitos sonoros
-├── 03_Gameplay/       # Lógica central do jogo
-├── 04_UI/             # Interface do usuário
-├── 05_Networking/     # Scripts de rede
-├── 06_AI/             # Sistemas de IA
-├── 07_ThirdParty/     # SDKs externos
-├── 08_Scenes/         # Cenas do Unity
-├── 09_Resources/      # Recursos carregáveis
-└── 10_Settings/       # Configurações globais
-```
+├── Art/                  # Assets visuais
+├── Audio/                # Música e efeitos sonoros
+├── Prefabs/              # Prefabs utilizados no jogo
+├── Scenes/               # Cenas do Unity
+├── Scripts/              # Scripts do jogo
+│   ├── Advanced/         # Sistemas avançados
+│   ├── Combat/           # Lógica de combate
+│   ├── Controls/         # Sistemas de controle
+│   ├── Economy/          # Sistema econômico e monetização
+│   ├── Esports/          # Funcionalidades para eSports
+│   ├── Gameplay/         # Lógica central do jogo
+│   ├── Networking/       # Scripts de rede
+│   ├── Social/           # Sistemas sociais, como chat e clãs
+│   ├── Systems/          # Sistemas auxiliares
+│   └── UI/               # Interface do usuário
+</pre>
 
-## 🔐 Estratégias de Segurança
+<h2>🔐 Estratégias de Segurança</h2>
+<ul>
+    <li><strong>Validação Server-Authoritative</strong>: Todas as ações críticas validadas no servidor</li>
+    <li><strong>Anti-Cheat Multicamadas</strong>: Detecção client-side + validação server-side</li>
+    <li><strong>Comunicação Segura</strong>: TLS/SSL para todas as comunicações</li>
+    <li><strong>Autenticação Robusta</strong>: Firebase Auth com múltiplos provedores</li>
+</ul>
 
-- **Validação Server-Authoritative**: Todas as ações críticas validadas no servidor
-- **Anti-Cheat Multicamadas**: Detecção client-side + validação server-side
-- **Comunicação Segura**: TLS/SSL para todas as comunicações
-- **Autenticação Robusta**: Firebase Auth com múltiplos provedores
+<h2>💰 Modelo de Monetização</h2>
+<ul>
+    <li><strong>Compras In-App</strong>: Skins, personagens, passes de batalha</li>
+    <li><strong>Anúncios Recompensados</strong>: Validação server-side</li>
+    <li><strong>Sistema de Moedas Virtuais</strong>: Economia balanceada</li>
+    <li><strong>Conteúdo Cosmético</strong>: Foco em itens visuais, não pay-to-win</li>
+</ul>
 
-## 💰 Modelo de Monetização
+<h2>🌟 Diferenciais Culturais</h2>
+<ul>
+    <li><strong>Folclore Brasileiro</strong>: Personagens baseados em lendas nacionais</li>
+    <li><strong>Mapas Temáticos</strong>: Favelas, Amazônia, metrópoles brasileiras</li>
+    <li><strong>Dublagem Autêntica</strong>: Sotaques regionais brasileiros</li>
+    <li><strong>Música Dinâmica</strong>: Instrumentos e temas folclóricos</li>
+</ul>
 
-- **Compras In-App**: Skins, personagens, passes de batalha
-- **Anúncios Recompensados**: Validação server-side
-- **Sistema de Moedas Virtuais**: Economia balanceada
-- **Conteúdo Cosmético**: Foco em itens visuais, não pay-to-win
+<h2>🚀 Como Executar</h2>
+<ol>
+    <li>Clone este repositório</li>
+    <li>Abra no Unity 6.0 LTS ou superior</li>
+    <li>Configure os SDKs do Firebase e PlayFab</li>
+    <li>Execute o projeto</li>
+</ol>
 
-## 🌟 Diferenciais Culturais
+<h2>📊 Métricas de Sucesso</h2>
+<ul>
+    <li><strong>Retenção D1/D7/D30</strong>: Monitoramento via Firebase Analytics</li>
+    <li><strong>ARPU</strong>: Receita por usuário através de IAPs e ads</li>
+    <li><strong>Engagement</strong>: Tempo de sessão e frequência de jogo</li>
+    <li><strong>Performance</strong>: FPS e estabilidade em dispositivos diversos</li>
+</ul>
 
-- **Folclore Brasileiro**: Personagens baseados em lendas nacionais
-- **Mapas Temáticos**: Favelas, Amazônia, metrópoles brasileiras
-- **Dublagem Autêntica**: Sotaques regionais brasileiros
-- **Música Dinâmica**: Instrumentos e temas folclóricos
+<h2>🤝 Contribuição</h2>
+<p>Contribuições são bem-vindas! Por favor, leia nosso guia de contribuição antes de enviar pull requests.</p>
 
-## 🚀 Como Executar
+<h2>📄 Licença</h2>
+<p>Este projeto está licenciado sob a MIT License - veja o arquivo LICENSE para detalhes.</p>
 
-1. Clone este repositório
-2. Abra no Unity 6.0 LTS ou superior
-3. Configure os SDKs do Firebase e PlayFab
-4. Execute o projeto
+<h2>📞 Contato</h2>
+<p>Paulo Silas de Campos Filho - <a href="mailto:techleadevelopers@gmail.com">techleadevelopers@gmail.com</a></p>
 
-## 📊 Métricas de Sucesso
+<p>Link do Projeto: <a href="https://github.com/techleadevelopers/arena-brasil-batalha-de-lendas">Arena Brasil Repository</a></p>
 
-- **Retenção D1/D7/D30**: Monitoramento via Firebase Analytics
-- **ARPU**: Receita por usuário através de IAPs e ads
-- **Engagement**: Tempo de sessão e frequência de jogo
-- **Performance**: FPS e estabilidade em dispositivos diversos
-
-## 🤝 Contribuição
-
-Contribuições são bem-vindas! Por favor, leia nosso guia de contribuição antes de enviar pull requests.
-
-## 📄 Licença
-
-Este projeto está licenciado sob a MIT License - veja o arquivo LICENSE para detalhes.
-
-## 📞 Contato
-
-Paulo Silas de Campos Filho - techleadevelopers@gmail.com
-
-Link do Projeto: [Arena Brasil Repository](https://github.com/techleadevelopers/arena-brasil-batalha-de-lendas)
+</body>
+</html>
